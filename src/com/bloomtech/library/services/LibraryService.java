@@ -1,11 +1,13 @@
 package com.bloomtech.library.services;
 
+import com.bloomtech.library.datastore.Datastore;
 import com.bloomtech.library.exceptions.LibraryNotFoundException;
 import com.bloomtech.library.exceptions.ResourceExistsException;
 import com.bloomtech.library.models.*;
 import com.bloomtech.library.models.checkableTypes.Checkable;
 import com.bloomtech.library.models.checkableTypes.Media;
 import com.bloomtech.library.repositories.CheckableRepository;
+import com.bloomtech.library.repositories.LibraryCardRepository;
 import com.bloomtech.library.repositories.LibraryRepository;
 import com.bloomtech.library.models.CheckableAmount;
 import com.bloomtech.library.repositories.PatronRepository;
@@ -31,7 +33,12 @@ public class LibraryService {
     private CheckableRepository checkableRepository;
     @Autowired
     private CheckableService checkableService;
+    @Autowired
+    private Datastore datastore;
+    @Autowired
+    private LibraryCardRepository libraryCardRepository;
 
+    
 
 
     public List<Library> getLibraries() {
@@ -41,12 +48,19 @@ public class LibraryService {
 
     public Library getLibraryByName(String name) {
         List<Library> libraries = libraryRepository.findAll();
-        for (Library library : libraries) {
-            if (library.getName().equals(name)) {
-                return library;
-            }
+        Optional<Library> libraryOptional = libraryRepository.findByName(name);
+        if (libraryOptional.isPresent()) {
+            return libraryOptional.get();
+        } else {
+            throw new LibraryNotFoundException("Non-existent library");
         }
-        throw new LibraryNotFoundException("Non-existent library");
+//        for (Library library : libraries) {
+//            if (library.getName().equals(name)) {
+//                System.out.println(library.getName());
+//                return library;
+//            }
+//        }
+
         //return null;
     }
 
@@ -76,6 +90,20 @@ public class LibraryService {
 //        for (Checkable checkable : checkables) {
 //            if (checkable.getIsbn().equals(checkableIsbn) {
 //                return()
+//            }
+//        }
+        List<Library> libraryList = libraryRepository.findAll();
+
+        for (Library library1 : libraryList) {
+            for (CheckableAmount checkableAmount : library1.getCheckables()) {
+                if (checkableAmount.getCheckable().getIsbn().equals(checkableIsbn)) {
+                    return new CheckableAmount(checkableAmount.getCheckable(), 0);
+                }
+            }
+        }
+//        for (Checkable checkable : checkableRepository.findAll()) {
+//            if (checkable.getIsbn().equals(checkableIsbn)) {
+//                return new CheckableAmount(checkable, 0);
 //            }
 //        }
         return new CheckableAmount(null, 0);
@@ -114,13 +142,37 @@ public class LibraryService {
     public List<OverdueCheckout> getOverdueCheckouts(String libraryName) {
         List<OverdueCheckout> overdueCheckouts = new ArrayList<>();
 
-
-
         Optional<Library> libraryOptional = libraryRepository.findByName(libraryName);
+
+        Library library = new Library(null);
 
         if (libraryOptional.isPresent()) {
             library = libraryOptional.get();
         }
+
+
+        List<LibraryCard> libraryCards = new ArrayList<>();
+
+        for (LibraryCard libraryCard : libraryCardRepository.findAll()) {
+            Library library1 = libraryCard.getLibrary();
+            if (libraryCard.getLibrary().getName().equals(libraryName)) {
+                libraryCards.add(libraryCard);
+            }
+        }
+
+
+        for (LibraryCard libraryCard : libraryCards) {
+            for (Checkout checkout : libraryCard.getCheckouts()) {
+                if (checkout.getDueDate().compareTo(LocalDateTime.now()) < 0 ) {
+                    //if (library.getCheckables().stream().filter(p -> p.getCheckable().getIsbn().equals(checkout.getCheckable().getIsbn())).findFirst().isPresent()) {
+                        overdueCheckouts.add(new OverdueCheckout(libraryCard.getPatron(), checkout));
+                        System.out.println(checkout.getCheckable().getTitle());
+                    //}
+                }
+            }
+        }
+
+
 
 
         return overdueCheckouts;
