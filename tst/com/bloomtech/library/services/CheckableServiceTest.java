@@ -5,6 +5,7 @@ import com.bloomtech.library.exceptions.ResourceExistsException;
 import com.bloomtech.library.models.Library;
 import com.bloomtech.library.models.checkableTypes.*;
 import com.bloomtech.library.repositories.CheckableRepository;
+import net.jodah.typetools.TypeResolver;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -26,6 +27,9 @@ import static org.mockito.Mockito.when;
 public class CheckableServiceTest {
 
     //TODO: Inject dependencies and mocks
+    @Autowired
+    CheckableService checkableService;
+
     @MockBean
     private CheckableRepository checkableRepository;
 
@@ -53,7 +57,7 @@ public class CheckableServiceTest {
     //TODO: Write Unit Tests for all CheckableService methods and possible Exceptions
 
     @Test
-    void findByIsbn_returnsValidCheckable() {
+    void getByIsbn_returnsValidCheckable() {
 
         Checkable expected = new ScienceKit("2-0", "Anatomy Model");
 
@@ -61,20 +65,22 @@ public class CheckableServiceTest {
 
 
         Mockito.when(checkableRepository.findByIsbn("2-0")).thenReturn(Optional.of(expected));
-        Optional<Checkable> actualOptional = checkableRepository.findByIsbn("2-0");
+        //Optional<Checkable> actualOptional = checkableRepository.findByIsbn("2-0");
 
-        Checkable actual = null;
+        Checkable actual = checkableService.getByIsbn("2-0");
 
-        if (actualOptional.isPresent()) {
-            actual = actualOptional.get();
-        }
+        //Checkable actual = null;
+
+//        if (actualOptional.isPresent()) {
+//            actual = actualOptional.get();
+//        }
 
         assertEquals(expected, actual);
 
     }
 
     @Test
-    void findByIsbn_invalidIsbn_throwsCheckableNotFoundException() {
+    void getByIsbn_invalidIsbn_throwsCheckableNotFoundException() {
         Checkable expected = null;
 
         Optional<Checkable> expectedOptional;
@@ -90,18 +96,51 @@ public class CheckableServiceTest {
 //            actual = null;
 //        }
 
-        assertThrows(CheckableNotFoundException.class, () -> {checkableRepository.findByIsbn("0-0");});
+        assertThrows(CheckableNotFoundException.class, () -> {checkableService.getByIsbn("0-0");});
     }
 
     @Test
-    void findAll_returnsListOfCheckables() {
+    void getAll_returnsListOfCheckables() {
 
         List<Checkable> expected = checkables;
 
         when(checkableRepository.findAll()).thenReturn(expected);
 
-        List<Checkable> actual = checkableRepository.findAll();
+        List<Checkable> actual = checkableService.getAll();
 
         assertEquals(actual, expected);
+    }
+
+    @Test
+    void getByType_returnsACheckableOfCorrectType() {
+        Checkable expected = checkables.get(0);
+
+        when(checkableRepository.findByType(Media.class)).thenReturn(Optional.ofNullable(expected));
+
+        Checkable actual = checkableService.getByType(Media.class);
+
+        assertEquals(expected, actual);
+
+    }
+
+    @Test
+    void getByType_throwsCheckableNotFoundException() {
+
+        when(checkableRepository.findByType(TypeResolver.Unknown.class)).thenThrow(CheckableNotFoundException.class);
+
+        assertThrows(CheckableNotFoundException.class, () -> {checkableService.getByType(TypeResolver.Unknown.class);});
+    }
+
+    @Test
+    void save() {
+        //Checkable expected = new ScienceKit("10-1", "1984");
+
+        when(checkableRepository.findAll()).thenReturn(checkables);
+
+        //checkableService.save(expected);
+
+        checkableService.save(new ScienceKit("10-1", "1984"));
+
+        Mockito.verify(checkableRepository).save(any(Checkable.class));
     }
 }
