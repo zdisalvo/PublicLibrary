@@ -1,11 +1,13 @@
 package com.bloomtech.library.services;
 
 import com.bloomtech.library.datastore.Datastore;
+import com.bloomtech.library.exceptions.CheckableNotFoundException;
 import com.bloomtech.library.exceptions.LibraryNotFoundException;
 import com.bloomtech.library.exceptions.ResourceExistsException;
 import com.bloomtech.library.models.*;
 import com.bloomtech.library.models.checkableTypes.Checkable;
 import com.bloomtech.library.models.checkableTypes.Media;
+import com.bloomtech.library.models.checkableTypes.ScienceKit;
 import com.bloomtech.library.repositories.CheckableRepository;
 import com.bloomtech.library.repositories.LibraryCardRepository;
 import com.bloomtech.library.repositories.LibraryRepository;
@@ -80,33 +82,18 @@ public class LibraryService {
             library = libraryOptional.get();
         }
 
+        Checkable checkable = checkableService.getByIsbn(checkableIsbn);
+
         for (CheckableAmount checkableAmount : library.getCheckables()) {
             if (checkableAmount.getCheckable().getIsbn().equals(checkableIsbn)) {
                 return new CheckableAmount(checkableAmount.getCheckable(), checkableAmount.getAmount());
             }
         }
 
-//        List<Checkable> checkables = checkableRepository.findAll();
-//        for (Checkable checkable : checkables) {
-//            if (checkable.getIsbn().equals(checkableIsbn) {
-//                return()
-//            }
-//        }
-        List<Library> libraryList = libraryRepository.findAll();
 
-        for (Library library1 : libraryList) {
-            for (CheckableAmount checkableAmount : library1.getCheckables()) {
-                if (checkableAmount.getCheckable().getIsbn().equals(checkableIsbn)) {
-                    return new CheckableAmount(checkableAmount.getCheckable(), 0);
-                }
-            }
-        }
-//        for (Checkable checkable : checkableRepository.findAll()) {
-//            if (checkable.getIsbn().equals(checkableIsbn)) {
-//                return new CheckableAmount(checkable, 0);
-//            }
-//        }
-        return new CheckableAmount(null, 0);
+
+        return new CheckableAmount(checkable, 0);
+
     }
 
     public List<LibraryAvailableCheckouts> getLibrariesWithAvailableCheckout(String isbn) {

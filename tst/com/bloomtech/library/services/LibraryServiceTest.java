@@ -5,12 +5,15 @@ import com.bloomtech.library.exceptions.LibraryNotFoundException;
 import com.bloomtech.library.exceptions.ResourceExistsException;
 import com.bloomtech.library.models.*;
 import com.bloomtech.library.models.checkableTypes.*;
+import com.bloomtech.library.repositories.CheckableRepository;
 import com.bloomtech.library.repositories.LibraryRepository;
 import com.bloomtech.library.views.LibraryAvailableCheckouts;
 import com.bloomtech.library.views.OverdueCheckout;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +34,8 @@ import static org.mockito.Mockito.*;
 public class LibraryServiceTest {
     @Autowired
     private LibraryService libraryService;
+    @Autowired
+    private CheckableRepository checkableRepository;
 
     @MockBean
     private LibraryRepository libraryRepository;
@@ -247,4 +252,6 @@ public class LibraryServiceTest {
         assertEquals(4, overdueCheckouts.size());
         verify(libraryRepository).findByName(library.getName());
     }
+
+
 }

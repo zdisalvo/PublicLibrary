@@ -20,11 +20,14 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.when;
 
 @SpringBootTest
 public class CheckableServiceTest {
 
     //TODO: Inject dependencies and mocks
+    @MockBean
+    private CheckableRepository checkableRepository;
 
     private List<Checkable> checkables;
 
@@ -48,4 +51,57 @@ public class CheckableServiceTest {
     }
 
     //TODO: Write Unit Tests for all CheckableService methods and possible Exceptions
+
+    @Test
+    void findByIsbn_returnsValidCheckable() {
+
+        Checkable expected = new ScienceKit("2-0", "Anatomy Model");
+
+        expected = checkables.get(5);
+
+
+        Mockito.when(checkableRepository.findByIsbn("2-0")).thenReturn(Optional.of(expected));
+        Optional<Checkable> actualOptional = checkableRepository.findByIsbn("2-0");
+
+        Checkable actual = null;
+
+        if (actualOptional.isPresent()) {
+            actual = actualOptional.get();
+        }
+
+        assertEquals(expected, actual);
+
+    }
+
+    @Test
+    void findByIsbn_invalidIsbn_throwsCheckableNotFoundException() {
+        Checkable expected = null;
+
+        Optional<Checkable> expectedOptional;
+
+        when(checkableRepository.findByIsbn("0-0")).thenThrow(CheckableNotFoundException.class);
+        //Optional<Checkable> actualOptional = checkableRepository.findByIsbn("0-0");
+
+        Checkable actual = null;
+
+//        if (actualOptional.isPresent()) {
+//            actual = actualOptional.get();
+//        } else {
+//            actual = null;
+//        }
+
+        assertThrows(CheckableNotFoundException.class, () -> {checkableRepository.findByIsbn("0-0");});
+    }
+
+    @Test
+    void findAll_returnsListOfCheckables() {
+
+        List<Checkable> expected = checkables;
+
+        when(checkableRepository.findAll()).thenReturn(expected);
+
+        List<Checkable> actual = checkableRepository.findAll();
+
+        assertEquals(actual, expected);
+    }
 }
