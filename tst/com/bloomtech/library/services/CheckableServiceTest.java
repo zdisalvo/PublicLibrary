@@ -20,8 +20,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @SpringBootTest
 public class CheckableServiceTest {
@@ -142,5 +141,16 @@ public class CheckableServiceTest {
         checkableService.save(new ScienceKit("10-1", "1984"));
 
         Mockito.verify(checkableRepository).save(any(Checkable.class));
+    }
+
+    @Test
+    void save_mediaAlreadyExistsThrowsException() {
+        when(checkableRepository.findAll()).thenReturn(checkables);
+
+        assertThrows(ResourceExistsException.class, () -> {
+            checkableService.save(new ScienceKit("2-0", "Anatomy Model"));
+        });
+
+        verify(checkableRepository, never()).save(any(Checkable.class));
     }
 }

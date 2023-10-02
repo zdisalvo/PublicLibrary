@@ -90,8 +90,6 @@ public class LibraryService {
             }
         }
 
-
-
         return new CheckableAmount(checkable, 0);
 
     }
