@@ -34,8 +34,8 @@ import static org.mockito.Mockito.*;
 public class LibraryServiceTest {
     @Autowired
     private LibraryService libraryService;
-    @Autowired
-    private CheckableRepository checkableRepository;
+//    @Autowired
+//    private CheckableRepository checkableRepository;
 
     @MockBean
     private LibraryRepository libraryRepository;
